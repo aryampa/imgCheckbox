@@ -6,7 +6,7 @@
  * Author:  James Cuénod
  *
  */
-(function($) {
+(function ($) {
 	var CHK_TOGGLE = 0;
 	var CHK_SELECT = 1;
 	var CHK_DESELECT = 2;
@@ -60,61 +60,67 @@
 		},
 	};
 
-	var imgCheckboxClass = function(element, options, id) {
-		var $wrapperElement, $finalStyles = {}, grayscaleStyles = {
-			"span.imgCheckbox img": {
-				"transform": "scale(1)",
-				"filter": "none",
-				"-webkit-filter": "grayscale(0)",
+	var imgCheckboxClass = function (element, options, id) {
+		var $wrapperElement,
+			$finalStyles = {},
+			grayscaleStyles = {
+				"span.imgCheckbox img": {
+					"transform": "scale(1)",
+					"filter": "none",
+					"-webkit-filter": "grayscale(0)",
+				},
+				"span.imgCheckbox.imgChked img": {
+					// "filter": "gray", //TODO - this line probably will not work but is necessary for IE
+					"filter": "grayscale(1)",
+					"-webkit-filter": "grayscale(1)",
+				}
 			},
-			"span.imgCheckbox.imgChked img": {
-				// "filter": "gray", //TODO - this line probably will not work but is necessary for IE
-				"filter": "grayscale(1)",
-				"-webkit-filter": "grayscale(1)",
-			}
-		}, scaleStyles = {
-			"span.imgCheckbox img": {
-				"transform": "scale(1)",
-			},
-			"span.imgCheckbox.imgChked img": {
-				"transform": "scale(0.8)",
-			}
-		}, scaleCheckMarkStyles = {
-			"span.imgCheckbox::before": {
-				"transform": "scale(0)",
-			},
-			"span.imgCheckbox.imgChked::before": {
-				"transform": "scale(1)",
-			}
-		}, fadeCheckMarkStyles = {
-			"span.imgCheckbox::before": {
-				"opacity": "0",
-			},
-			"span.imgCheckbox.imgChked::before": {
-				"opacity": "1",
-			}
-		};
+			scaleStyles = {
+				"span.imgCheckbox img": {
+					"transform": "scale(1)",
+				},
+				"span.imgCheckbox.imgChked img": {
+					"transform": "scale(0.8)",
+				}
+			}, scaleCheckMarkStyles = {
+				"span.imgCheckbox::before": {
+					"transform": "scale(0)",
+				},
+				"span.imgCheckbox.imgChked::before": {
+					"transform": "scale(1)",
+				}
+			}, fadeCheckMarkStyles = {
+				"span.imgCheckbox::before": {
+					"opacity": "0",
+				},
+				"span.imgCheckbox.imgChked::before": {
+					"opacity": "1",
+				}
+			};
 
 		/* *** STYLESHEET STUFF *** */
 		// shove in the custom check mark
 		if (options.checkMarkImage !== false)
-		$.extend(true, $finalStyles, { "span.imgCheckbox::before": { "background-image": "url('" + options.checkMarkImage + "')" }});
+			$.extend(true, $finalStyles, { "span.imgCheckbox::before": { "background-image": "url('" + options.checkMarkImage + "')" } });
 		// give the checkmark dimensions
 		var chkDimensions = options.checkMarkSize.split(" ");
-		$.extend(true, $finalStyles, { "span.imgCheckbox::before": {
-			"width": chkDimensions[0],
-			"height": chkDimensions[chkDimensions.length - 1]
-		}});
+		$.extend(true, $finalStyles, {
+			"span.imgCheckbox::before": {
+				"width": chkDimensions[0],
+				"height": chkDimensions[chkDimensions.length - 1]
+			}
+		});
 		// give the checkmark a position
-		$.extend(true, $finalStyles, { "span.imgCheckbox::before": CHECKMARK_POSITION [ options.checkMarkPosition ] });
+		$.extend(true, $finalStyles, { "span.imgCheckbox::before": CHECKMARK_POSITION[options.checkMarkPosition] });
 		// fixed image sizes
-		if (options.fixedImageSize)
-		{
+		if (options.fixedImageSize) {
 			var imgDimensions = options.fixedImageSize.split(" ");
-			$.extend(true, $finalStyles,{ "span.imgCheckbox img": {
-				"width": imgDimensions[0],
-				"height": imgDimensions[imgDimensions.length - 1]
-			}});
+			$.extend(true, $finalStyles, {
+				"span.imgCheckbox img": {
+					"width": imgDimensions[0],
+					"height": imgDimensions[imgDimensions.length - 1]
+				}
+			});
 		}
 
 		var conditionalExtend = [
@@ -135,7 +141,7 @@
 				style: fadeCheckMarkStyles
 			}
 		];
-		conditionalExtend.forEach(function(extension) {
+		conditionalExtend.forEach(function (extension) {
 			if (extension.doExtension)
 				$.extend(true, $finalStyles, extension.style);
 		});
@@ -147,56 +153,88 @@
 
 
 		/* *** DOM STUFF *** */
-		element.wrap("<span class='imgCheckbox" + id + "'>");
+		//element.wrap("<span class='imgCheckbox" + id + "'>");
+
+		element.each(function () { // forech elem, get data attributes and wrap elem in span....
+
+			$_traget = $(this);
+			let onClockCallBack = ($_traget.data('click') ? $_traget.data('click') : null);
+
+            if (onClockCallBack) {
+
+				$(this).wrap(`<span class="imgCheckbox${id}" data-click="${onClockCallBack}">`);
+
+			} else {
+
+				$(this).wrap(`<span class='imgCheckbox${id}' >`);
+			}
+
+
+
+			//console.log('>> ', $_traget.data('master'), ' ->', $_traget.data('click'), '\n' );
+
+		})
 		$wrapperElement = element.parent();
 		// set up select/deselect functions
-		$wrapperElement.each(function() {
+		$wrapperElement.each(function () {
 			var $that = $(this);
-			$(this).data("imgchk.deselect", function(){
+			$(this).data("imgchk.deselect", function () {
 				changeSelection($that, CHK_DESELECT, options.addToForm, options.radio, options.canDeselect, $wrapperElement);
-			}).data("imgchk.select", function(){
+			}).data("imgchk.select", function () {
 				changeSelection($that, CHK_SELECT, options.addToForm, options.radio, options.canDeselect, $wrapperElement);
 			});
-			$(this).children().first().data("imgchk.deselect", function(){
+			$(this).children().first().data("imgchk.deselect", function () {
 				changeSelection($that, CHK_DESELECT, options.addToForm, options.radio, options.canDeselect, $wrapperElement);
-			}).data("imgchk.select", function(){
+			}).data("imgchk.select", function () {
 				changeSelection($that, CHK_SELECT, options.addToForm, options.radio, options.canDeselect, $wrapperElement);
 			});
 		});
 		// preselect elements
-		if (options.preselect === true || options.preselect.length > 0)
-		{
-			$wrapperElement.each(function(index) {
+		if (options.preselect === true || options.preselect.length > 0) {
+			$wrapperElement.each(function (index) {
 				if (options.preselect === true || options.preselect.indexOf(index) >= 0)
-				$(this).addClass("imgChked");
+					$(this).addClass("imgChked");
 			});
 		}
 
 		// set up click handler
-		$wrapperElement.click(function() {
-			var el = $(this); 
+		$wrapperElement.click(function () {
+			var el = $(this);
 			changeSelection(el, CHK_TOGGLE, options.addToForm, options.radio, options.canDeselect, $wrapperElement);
-			if (options.onclick)
+
+			let _clickData = el.data('click');
+
+			if (_clickData) {// caleb mode to accomdate inline onclock function on image element
+
+				var _clickFunc = eval(_clickData);
+				if (typeof _clickFunc == 'function') {
+					_clickFunc();
+				}
+
+			} else if (options.onclick) {
+
 				options.onclick(el);
+
+			}
+
+
+
+
 		});
 
 		/* *** INJECT INTO FORM *** */
-		if (options.addToForm instanceof jQuery || options.addToForm === true)
-		{
-			if (options.addToForm === true)
-			{
+		if (options.addToForm instanceof jQuery || options.addToForm === true) {
+			if (options.addToForm === true) {
 				options.addToForm = $(element).closest("form");
 			}
-			if (options.addToForm.length === 0)
-			{
+			if (options.addToForm.length === 0) {
 				if (options.debugMessages)
-				console.log("imgCheckbox: no form found (looks for form by default)");
+					console.log("imgCheckbox: no form found (looks for form by default)");
 				options.addToForm = false;
 			}
 		}
-		if (options.addToForm !== false)
-		{
-			$(element).each(function(index) {
+		if (options.addToForm !== false) {
+			$(element).each(function (index) {
 				var hiddenElementId = "hEI" + id + "-" + index;
 				$(this).parent().data('hiddenElementId', hiddenElementId);
 				var imgName = $(this).attr("name");
@@ -214,8 +252,7 @@
 	};
 
 	/* CSS Injection */
-	function injectStylesheet(stylesObject, id)
-	{
+	function injectStylesheet(stylesObject, id) {
 		// Create a blank style
 		var style = document.createElement("style");
 		// WebKit hack
@@ -231,8 +268,7 @@
 			}
 		}
 	}
-	function buildRules(ruleObject)
-	{
+	function buildRules(ruleObject) {
 		var ruleSet = "";
 		for (var property in ruleObject) {
 			if (ruleObject.hasOwnProperty(property)) {
@@ -241,8 +277,7 @@
 		}
 		return ruleSet;
 	}
-	function compatInsertRule(stylesheet, selector, cssText, id)
-	{
+	function compatInsertRule(stylesheet, selector, cssText, id) {
 		var modifiedSelector = selector.replace(".imgCheckbox", ".imgCheckbox" + id);
 		// IE8 uses "addRule", everyone else uses "insertRule"
 		if (stylesheet.insertRule) {
@@ -252,21 +287,17 @@
 		}
 	}
 
-	function changeSelection($chosenElement, howToModify, addToForm, radio, canDeselect, $wrapperElement)
-	{
-		if (radio && howToModify !== CHK_DESELECT)
-		{
+	function changeSelection($chosenElement, howToModify, addToForm, radio, canDeselect, $wrapperElement) {
+		if (radio && howToModify !== CHK_DESELECT) {
 			$wrapperElement.not($chosenElement).removeClass("imgChked");
-			if (canDeselect)
-			{
+			if (canDeselect) {
 				$chosenElement.toggleClass("imgChked");
 			}
 			else {
 				$chosenElement.addClass("imgChked");
 			}
 		}
-		else
-		{
+		else {
 			switch (howToModify) {
 				case CHK_DESELECT:
 					$chosenElement.removeClass("imgChked");
@@ -282,21 +313,19 @@
 		if (addToForm)
 			updateFormValues(radio ? $wrapperElement : $chosenElement);
 	}
-	function updateFormValues($element)
-	{
-		$element.each(function() {
-			$( "." + $(this).data("hiddenElementId") ).prop("checked", $(this).hasClass("imgChked"));
+	function updateFormValues($element) {
+		$element.each(function () {
+			$("." + $(this).data("hiddenElementId")).prop("checked", $(this).hasClass("imgChked"));
 		});
 	}
 
 
 	/* Init */
-	$.fn.imgCheckbox = function(options) {
+	$.fn.imgCheckbox = function (options) {
 		if ($(this).data("imgCheckboxId"))
 			//already initialised: old instance = $.fn.imgCheckbox.instances[$(this).data("imgCheckboxId") - 1];
 			return this;
-		else
-		{
+		else {
 			var optionsWithDefaults = $.extend(true, {}, $.fn.imgCheckbox.defaults, options);
 			var $that = new imgCheckboxClass($(this), optionsWithDefaults, $.fn.imgCheckbox.instances.length);
 			$(this).data("imgCheckboxId", $.fn.imgCheckbox.instances.push($that));
@@ -305,16 +334,14 @@
 			return this;
 		}
 	};
-	$.fn.deselect = function() {
-		if (this.data("imgchk.deselect"))
-		{
+	$.fn.deselect = function () {
+		if (this.data("imgchk.deselect")) {
 			this.data("imgchk.deselect")();
 		}
 		return this;
 	};
-	$.fn.select = function() {
-		if (this.data("imgchk.select"))
-		{
+	$.fn.select = function () {
+		if (this.data("imgchk.select")) {
 			this.data("imgchk.select")();
 		}
 		return this;
@@ -378,4 +405,4 @@
 		}
 	};
 
-})( jQuery );
+})(jQuery);
